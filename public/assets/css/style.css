@@ -1,0 +1,348 @@
+.affix {
+    top: 0;
+    width: 100%;
+    z-index: 9999 !important;
+}
+
+.navbar {
+    margin-bottom: 0px;
+}
+
+.affix~.container-fluid {
+    position: relative;
+    top: 50px;
+}
+
+#header {
+    padding-top: 50px;
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 56px;
+    position: static;
+}
+
+#container {
+    background-color: #232323;
+    position: relative;
+    font-family: 'Montserrat', serif;
+    color: #FFFFFF;
+    font-size: 14px;
+    background-color: #232323;
+}
+
+.btn-custom {
+    color: #fff;
+    background-color: #80808080;
+    border-color: #d9d9d9;
+    text-align: center;
+    text-decoration: none;
+    position: relative;
+    display: inline-block;
+    padding: 12px 80px;
+    border-radius: 50px;
+}
+
+
+/*.btn-custom {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+} */
+
+.btn-custom:hover {
+    color: #fff;
+    background-color: #5a6268;
+    border-color: #545b62
+}
+
+.btn-custom.focus,
+.btn-custom:focus {
+    box-shadow: 0 0 0 .2rem rgba(108, 117, 125, .5)
+}
+
+.btn-custom.disabled,
+.btn-custom:disabled {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d
+}
+
+.btn-custom:not(:disabled):not(.disabled).active,
+.btn-custom:not(:disabled):not(.disabled):active,
+.show>.btn-custom.dropdown-toggle {
+    color: #fff;
+    background-color: #545b62;
+    border-color: #4e555b
+}
+
+.btn-custom:not(:disabled):not(.disabled).active:focus,
+.btn-custom:not(:disabled):not(.disabled):active:focus,
+.show>.btn-custom.dropdown-toggle:focus {
+    box-shadow: 0 0 0 .2rem rgba(108, 117, 125, .5)
+}
+
+.btn-md {
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin: .4rem .8rem !important;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+    padding: 1rem 3rem;
+    border-radius: 3px;
+}
+
+@media (max-width: 767px) {
+    .align-left,
+    .align-center,
+    .align-right,
+    .mbr-section-btn,
+    .mbr-section-title {
+        text-align: center;
+    }
+}
+
+.mbr-section-btn {
+    font-size: 0;
+    text-align: center;
+    padding-top: 200px;
+    margin-right: 220px;
+}
+
+nav .mbr-section-btn {
+    margin-left: 0rem;
+    margin-right: 0rem;
+}
+
+#footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    padding-top: 7px;
+    width: 100%;
+    background-color: #191919;
+    color: white;
+    text-align: center;
+}
+
+#active {
+    color: #FFFFFF;
+}
+
+.div {
+    margin: 100px 25px 0px 25px;
+    text-align: left;
+}
+
+.topnav {
+    overflow: hidden;
+    background-color: #232323;
+}
+
+.topnav a {
+    float: left;
+    display: block;
+    color: #232323;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+.topnav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.active {
+    color: white;
+}
+
+.topnav .icon {
+    display: none;
+}
+
+@media screen and (max-width: 600px) {
+    .topnav a:not(:first-child) {
+        display: none;
+    }
+    .topnav a.icon {
+        float: right;
+        display: block;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .topnav.responsive {
+        position: relative;
+    }
+    .topnav.responsive .icon {
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+    .topnav.responsive a {
+        float: none;
+        display: block;
+        text-align: left;
+    }
+}
+
+@media screen and (min-width: 0px) and (max-width: 500px) {
+    #myTopNav {
+        display: inline;
+    }
+}
+
+.btt {
+    color: #232323;
+    position: fixed;
+    font-family: 'Montserrat', serif;
+    bottom: 0;
+    right: 0;
+    margin-top: 200px;
+    width: 40px;
+    height: 40px;
+    background-color: #FFFFFF;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.uparrow {
+    transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+}
+
+i {
+    border: solid black;
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+}
+
+.scrolltop {
+    position: fixed;
+    padding-top: 10px;
+    display: inline;
+    margin: 0 15px 15px 0;
+    opacity: 0.6;
+    margin-bottom: 50px;
+    filter: alpha(opacity=50);
+}
+
+
+/* SUDOKU */
+
+.grid-container {
+    margin: 20px auto 0;
+    width: 40vw;
+    /* outline: solid 1px #3265a8; */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr) 0.2fr repeat(2, 0.5fr);
+    gap: 0px 0px;
+    grid-template-areas: "Group1 Group2 Group3" "Group4 Group5 Group6" "Group7 Group8 Group9" ". . ." "Controls Controls Controls" "Controls Controls Controls";
+    text-align: center;
+    min-width: 400px;
+}
+
+.Group {
+    background-color: #232323;
+    outline: solid 1px #3265a8;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0px 0px;
+    grid-template-areas: "Cell1 Cell2 Cell3" "Cell4 Cell5 Cell6" "Cell7 Cell8 Cell9";
+    text-align: inherit;
+}
+
+.Cell {
+    background-color: inherit;
+    outline: solid 1px #444;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0px 0px;
+    grid-template-areas: "Pen1 Pen2 Pen3" "Pen4 Pen5 Pen6" "Pen7 Pen8 Pen9";
+    text-align: inherit;
+}
+
+.Cell:hover {
+    background-color: #292929;
+    outline: solid 1px #444;
+}
+
+.CellActive {
+    background-color: #333333 !important;
+    /* background-color: #404040; */
+}
+
+.CellActive:hover {
+    background-color: #333333 !important;
+}
+
+.CellSubActive {
+    background-color: #292929;
+}
+
+.CellSubActive:hover {
+    background-color: #292929;
+}
+
+.CellValue {
+    padding-top: 6px;
+    font-size: 40px;
+    cursor: default;
+    user-select: none;
+}
+
+.Pen {
+    padding: 1px;
+    font-size: 16px;
+}
+
+.hidden-pen {
+    visibility: hidden;
+}
+
+.Options {
+    outline: solid 1px #3265a8;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 0.5fr 1fr;
+    gap: 0px 0px;
+    grid-template-areas: "Numbers" "Options";
+    grid-area: Controls;
+}
+
+.ControlNumbers {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-template-areas: "N1 N2 N3 N4 N5 N6 N7 N8 N9";
+    grid-area: Numbers;
+}
+
+.Numbers {
+    padding-top: 7px;
+    outline: solid 1px #444;
+    font-size: 40px;
+    cursor: default;
+    user-select: none;
+}
+
+.Numbers:hover {
+    background-color: #292929;
+    outline: solid 1px #444;
+}
+
+.ControlOptions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-template-areas: "Pencil Eraser";
+    grid-area: Options;
+}
