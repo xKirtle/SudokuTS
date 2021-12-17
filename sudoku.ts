@@ -1,178 +1,162 @@
-const boardElement = document.getElementById('grid');
-
-interface Board {
-  groups: Group[];
-  selectedCell?: Cell;
-  isPencilEnabled: boolean;
-}
-
-interface Group {
-  cells: Cell[];
-  readonly element: HTMLDivElement;
-}
-
-interface Cell {
-  value?: number;
-  readonly readOnly: boolean;
-  pencilEnabled: boolean;
-  pencilValues: number[];
-  pencilElements: HTMLDivElement[];
-  readonly group: number;
-  readonly index: number;
-  readonly element: HTMLDivElement;
-}
-
-function boardGeneration(difficulty: number) {
-  const sudokuPuzzle = function () : number[][] {
-    //TODO: Actually generate a valid sudoku board
-    let result = 
-    [
-      //each line is a group
-      [5,4,3,2,1,9,8,7,6],
-      [9,2,1,6,8,7,3,5,4],
-      [8,7,6,5,4,3,2,1,9],
-      [9,8,7,3,2,1,6,5,4],
-      [4,6,5,7,9,8,1,3,2],
-      [3,2,1,6,5,4,9,8,7],
-      [7,6,5,4,3,2,1,9,8],
-      [2,4,3,8,1,9,5,7,6],
-      [1,9,8,7,6,5,4,3,2]
-    ];
+{
+  interface Board {
+    groups: Group[];
+    selectedCell?: Cell;
+    isPencilEnabled: boolean;
+  }
   
-    return result;
-  }();
+  interface Group {
+    cells: Cell[];
+    readonly element: HTMLDivElement;
+  }
+  
+  interface Cell {
+    value?: number;
+    readonly readOnly: boolean;
+    pencilEnabled: boolean;
+    pencilValues: number[];
+    pencilElements: HTMLDivElement[];
+    readonly group: number;
+    readonly index: number;
+    readonly element: HTMLDivElement;
+  }
 
+  const boardElement = document.getElementById('grid');
   let board: Board = {
     groups: [],
     isPencilEnabled: false
   };
 
-  //Generate Groups
-  for (let i = 1; i < 10; i++) {
-    let group: Group = {
-      cells: [],
-      element: document.createElement('div')
-    };
+  function boardGeneration(difficulty: number) {
+    const sudokuPuzzle = GenerateSudokuPuzzle();
 
-    group.element.classList.add('Group');
-    group.element.style.gridArea = 'Group' + i;
-
-    //Create Cells
-    for (let j = 1; j < 10; j++) {
-      let isReadOnly = Math.random() >= difficulty;
-
-      let cell: Cell = {
-        value: undefined,
-        readOnly: isReadOnly,
-        pencilEnabled: false,
-        pencilValues: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        pencilElements: [],
-        group: i-1,
-        index: j-1,
+    //Generate Groups
+    for (let i = 1; i < 10; i++) {
+      let group: Group = {
+        cells: [],
         element: document.createElement('div')
       };
 
-      //HTML display of the Cell
-      //Cell Value + Cell Pen Values
-      cell.element.classList.add('Cell');
-      cell.element.style.gridArea = 'Cell' + j;
+      group.element.classList.add('Group');
+      group.element.style.gridArea = 'Group' + i;
 
-      cell.element.addEventListener('mousedown', () => {
-        setSelectedCell(cell.group, cell.index);
+      //Create Cells
+      for (let j = 1; j < 10; j++) {
+        let isReadOnly = Math.random() >= difficulty;
+
+        let cell: Cell = {
+          value: undefined,
+          readOnly: isReadOnly,
+          pencilEnabled: false,
+          pencilValues: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          pencilElements: [],
+          group: i-1,
+          index: j-1,
+          element: document.createElement('div')
+        };
+
+        //HTML display of the Cell
+        //Cell Value + Cell Pen Values
+        cell.element.classList.add('Cell');
+        cell.element.style.gridArea = 'Cell' + j;
+
+        cell.element.addEventListener('mousedown', () => {
+          setSelectedCell(cell.group, cell.index);
+        });
+
+        //HTML display of the Cell Value
+        let cellValue = document.createElement('div');
+        cellValue.classList.add('CellValue');
+        cellValue.style.gridArea = '1 / 1 / 4 / 4';
+
+        if (isReadOnly) {
+          cell.value = sudokuPuzzle[cell.group][cell.index];
+          cellValue.textContent = sudokuPuzzle[cell.group][cell.index].toString();
+          cellValue.style.color = '#999';
+        }
+
+        cell.element.append(cellValue);
+
+        //Create Pencil Cells
+        for(let k = 1; k < 10; k++) {
+          let penElement = document.createElement('div');
+          penElement.classList.add('Pen', 'hidden-pen');
+          penElement.style.gridArea = 'Pen' + k;
+          penElement.textContent = k.toString();
+
+          cell.pencilElements.push(penElement);
+          cell.element.append(penElement);
+        }
+
+        group.cells.push(cell);
+        group.element.append(cell.element);
+      }
+
+      board.groups.push(group);
+      boardElement?.append(group.element);
+    }
+
+    //Options
+    let optionsElement = document.createElement('div');
+    optionsElement.classList.add('Options');
+
+    //Number Selection
+    let numbersElement = document.createElement('div');
+    numbersElement.classList.add('ControlNumbers');
+
+    for (let i = 1; i < 10; i++) {
+      let numberElement = document.createElement('div');
+      numberElement.classList.add('Numbers');
+      numberElement.style.gridArea = 'N' + i;
+      numberElement.textContent = i.toString();
+
+      numberElement.addEventListener('mousedown', () => {
+        setSelectedCellValue(i);
       });
 
-      //HTML display of the Cell Value
-      let cellValue = document.createElement('div');
-      cellValue.classList.add('CellValue');
-      cellValue.style.gridArea = '1 / 1 / 4 / 4';
-
-      if (isReadOnly) {
-        cell.value = sudokuPuzzle[cell.group][cell.index];
-        cellValue.textContent = sudokuPuzzle[cell.group][cell.index].toString();
-        cellValue.style.color = '#999';
-      }
-
-      cell.element.append(cellValue);
-
-      //Create Pencil Cells
-      for(let k = 1; k < 10; k++) {
-        let penElement = document.createElement('div');
-        penElement.classList.add('Pen', 'hidden-pen');
-        penElement.style.gridArea = 'Pen' + k;
-        penElement.textContent = k.toString();
-
-        cell.pencilElements.push(penElement);
-        cell.element.append(penElement);
-      }
-
-      group.cells.push(cell);
-      group.element.append(cell.element);
+      numbersElement.append(numberElement);
     }
 
-    board.groups.push(group);
-    boardElement?.append(group.element);
-  }
+    optionsElement.append(numbersElement);
 
-  //Options
-  let optionsElement = document.createElement('div');
-  optionsElement.classList.add('Options');
+    //Mode Selection
+    //Pencil + Eraser
+    let controlOptionsElement = document.createElement('div');
+    controlOptionsElement.classList.add('ControlOptions');
 
-  //Number Selection
-  let numbersElement = document.createElement('div');
-  numbersElement.classList.add('ControlNumbers');
+    let pencilElement = document.createElement('div');
+    pencilElement.classList.add('Numbers');
+    pencilElement.style.paddingTop = '40px';
+    pencilElement.style.gridArea = 'Pencil';
+    pencilElement.textContent = 'Pencil';
 
-  for (let i = 1; i < 10; i++) {
-    let numberElement = document.createElement('div');
-    numberElement.classList.add('Numbers');
-    numberElement.style.gridArea = 'N' + i;
-    numberElement.textContent = i.toString();
+    pencilElement.addEventListener('mousedown', () => {
+      board.isPencilEnabled = !board.isPencilEnabled;
 
-    numberElement.addEventListener('mousedown', () => {
-      setSelectedCellValue(i);
+      if (board.isPencilEnabled) {
+        pencilElement.classList.add('CellActive');
+      } else {
+        pencilElement.classList.remove('CellActive');
+      }
     });
 
-    numbersElement.append(numberElement);
+    controlOptionsElement.append(pencilElement);
+
+    let eraserElement = document.createElement('div');
+    eraserElement.classList.add('Numbers');
+    eraserElement.style.padding = '40px';
+    eraserElement.style.gridArea = 'Eraser';
+    eraserElement.textContent = 'Erase';
+
+    eraserElement.addEventListener('mousedown', () => {
+      setSelectedCellValue();
+    });
+
+    controlOptionsElement.append(eraserElement);
+
+    optionsElement.append(controlOptionsElement);
+    boardElement?.append(optionsElement);
   }
-
-  optionsElement.append(numbersElement);
-
-  //Mode Selection
-  //Pencil + Eraser
-  let controlOptionsElement = document.createElement('div');
-  controlOptionsElement.classList.add('ControlOptions');
-
-  let pencilElement = document.createElement('div');
-  pencilElement.classList.add('Numbers');
-  pencilElement.style.paddingTop = '40px';
-  pencilElement.style.gridArea = 'Pencil';
-  pencilElement.textContent = 'Pencil';
-
-  pencilElement.addEventListener('mousedown', () => {
-    board.isPencilEnabled = !board.isPencilEnabled;
-
-    if (board.isPencilEnabled) {
-      pencilElement.classList.add('CellActive');
-    } else {
-      pencilElement.classList.remove('CellActive');
-    }
-  });
-
-  controlOptionsElement.append(pencilElement);
-
-  let eraserElement = document.createElement('div');
-  eraserElement.classList.add('Numbers');
-  eraserElement.style.padding = '40px';
-  eraserElement.style.gridArea = 'Eraser';
-  eraserElement.textContent = 'Erase';
-
-  eraserElement.addEventListener('mousedown', () => {
-    setSelectedCellValue();
-  });
-
-  controlOptionsElement.append(eraserElement);
-
-  optionsElement.append(controlOptionsElement);
-  boardElement?.append(optionsElement);
 
   function setSelectedCell(group: number, index: number) {
     //Clear previous highlight
@@ -262,6 +246,25 @@ function boardGeneration(difficulty: number) {
       }
     }));    
   }
-}
 
-boardGeneration(0.5);
+  function GenerateSudokuPuzzle() : number[][] {
+    //TODO: Actually generate a valid sudoku board
+    let result = 
+    [
+      //each line is a group
+      [5,4,3,2,1,9,8,7,6],
+      [9,2,1,6,8,7,3,5,4],
+      [8,7,6,5,4,3,2,1,9],
+      [9,8,7,3,2,1,6,5,4],
+      [4,6,5,7,9,8,1,3,2],
+      [3,2,1,6,5,4,9,8,7],
+      [7,6,5,4,3,2,1,9,8],
+      [2,4,3,8,1,9,5,7,6],
+      [1,9,8,7,6,5,4,3,2]
+    ];
+  
+    return result;
+  }
+
+  boardGeneration(0.5);
+}
