@@ -22,15 +22,14 @@
   }
 
   const boardElement = document.getElementById('grid');
-  let board: Board = {
-    groups: [],
-    isPencilEnabled: false
-  };
 
-  function boardGeneration(difficulty: number) {
-    const sudokuPuzzle = GenerateSudokuPuzzle();
+  function boardGeneration(difficulty: number, arrayBoard: number[][]) {
+    let board: Board = {
+      groups: [],
+      isPencilEnabled: false
+    };
 
-    //Generate Groups
+    //#region Generate Groups
     for (let i = 1; i < 10; i++) {
       let group: Group = {
         cells: [],
@@ -40,7 +39,7 @@
       group.element.classList.add('Group');
       group.element.style.gridArea = 'Group' + i;
 
-      //Create Cells
+      //#region Create Cells
       for (let j = 1; j < 10; j++) {
         let isReadOnly = Math.random() >= difficulty;
 
@@ -55,7 +54,7 @@
           element: document.createElement('div')
         };
 
-        //HTML display of the Cell
+        //#region HTML display of the Cell
         //Cell Value + Cell Pen Values
         cell.element.classList.add('Cell');
         cell.element.style.gridArea = 'Cell' + j;
@@ -70,8 +69,8 @@
         cellValue.style.gridArea = '1 / 1 / 4 / 4';
 
         if (isReadOnly) {
-          cell.value = sudokuPuzzle[cell.group][cell.index];
-          cellValue.textContent = sudokuPuzzle[cell.group][cell.index].toString();
+          cell.value = arrayBoard[cell.group][cell.index];
+          cellValue.textContent = arrayBoard[cell.group][cell.index].toString();
           cellValue.style.color = '#999';
         }
 
@@ -90,17 +89,19 @@
 
         group.cells.push(cell);
         group.element.append(cell.element);
+        //#endregion
       }
+      //#endregion
 
       board.groups.push(group);
       boardElement?.append(group.element);
     }
+    //#endregion
 
-    //Options
+    //#region Options
     let optionsElement = document.createElement('div');
     optionsElement.classList.add('Options');
 
-    //Number Selection
     let numbersElement = document.createElement('div');
     numbersElement.classList.add('ControlNumbers');
 
@@ -119,7 +120,6 @@
 
     optionsElement.append(numbersElement);
 
-    //Mode Selection
     //Pencil + Eraser
     let controlOptionsElement = document.createElement('div');
     controlOptionsElement.classList.add('ControlOptions');
@@ -156,115 +156,312 @@
 
     optionsElement.append(controlOptionsElement);
     boardElement?.append(optionsElement);
-  }
+    //#endregion
 
-  function setSelectedCell(group: number, index: number) {
-    //Clear previous highlight
-    board.groups.forEach(group => {
-      group.element.classList.remove('CellSubActive');
-      group.cells.forEach(cell => cell.element.classList.remove('CellActive', 'CellSubActive'));
-    });
-    board.selectedCell?.pencilElements.forEach(x => x.classList.remove('CellActive', 'CellSubActive'));
+    //Make keyboard be able to place numbers
+    addEventListener('keydown', (event) => {
+      if (event.key !== undefined) {
 
-    //Get new selected cell
-    board.selectedCell = board.groups[group].cells[index];
+        let key = parseInt(event.key);
+        if (key >= 1 && key <= 9) {
+          if (board.selectedCell != undefined) {
+            setSelectedCellValue(key);
+          }
+        }
 
-    //Highlight Cell
-    board.selectedCell.element.classList.add('CellActive');
+        if (event.key == 'Tab') {
+          if (board.selectedCell != undefined) {
+            let cellIndex = board.selectedCell.index;
+            if (cellIndex < 8) {
+              setSelectedCell(board.selectedCell.group, board.selectedCell.index + 1);
+            } else {
+              setSelectedCell(board.selectedCell.group + 1, 0);
+            }
 
-    //Highlight Group
-    board.selectedCell.element.parentElement?.classList.add('CellSubActive');
-
-    //Highlight Row
-    //let row = Math.trunc(group / 3) * 3 + Math.trunc(index / 3);
-    let groupRow = Math.trunc(group / 3) * 3;
-    let cellRow = Math.trunc(index / 3) * 3;
-
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        board.groups[groupRow + i].cells[cellRow + j].element.classList.add('CellSubActive');
-      }
-    }
-
-    //Highlight Column
-    //let column = (group % 3) * 3 + index % 3;
-    let groupColumn = group % 3;
-    let cellColumn = index % 3;
-
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        board.groups[groupColumn + (i * 3)].cells[cellColumn + (j * 3)].element.classList.add('CellSubActive');
-      }
-    }
-
-    //Highlight numbers with same value
-    if (board.selectedCell.value == undefined) return;
-
-    board.groups.forEach(group => group.cells.forEach(cell => {
-      if (board.selectedCell != cell && board.selectedCell?.value == cell.value) {
-        cell.element.classList.add('CellActive');
-      }
-    }));
-
-    renderCellValues();
-  }
-
-  function setSelectedCellValue(value?: number) {
-    if (board.selectedCell == undefined || board.selectedCell?.readOnly) return;
-
-    if (!board.isPencilEnabled || value == undefined) {
-      board.selectedCell.value = value;
-
-      if (board.selectedCell.pencilEnabled) {
-        board.selectedCell.pencilValues = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-        board.selectedCell.pencilEnabled = false;
-      }
-    } else {
-      board.selectedCell.value = undefined;
-      board.selectedCell.pencilEnabled = true;
-      board.selectedCell.pencilValues[value-1] = Number(!board.selectedCell.pencilValues[value-1]);
-    }
-
-    setSelectedCell(board.selectedCell.group, board.selectedCell.index);
-    renderCellValues();
-  }
-
-  function renderCellValues() {
-    board.groups.forEach(group => group.cells.forEach(cell => {
-      cell.element.children[0].textContent = null;
-      cell.pencilElements.forEach(pencil => pencil.classList.add('hidden-pen'));
-
-      if (!cell.pencilEnabled) {
-        //cell value should never be null here...
-        cell.element.children[0].textContent = cell.value?.toString() ?? "";
-      } else {
-        for (let i = 0; i < 9; i++) {
-          if (cell.pencilValues[i]) {
-            cell.pencilElements[i].classList.remove('hidden-pen');
+            event.preventDefault();
           }
         }
       }
-    }));    
+    });
+
+    //#region Functions
+    function setSelectedCell(group: number, index: number) {
+      //Clear previous highlight
+      board.groups.forEach(group => {
+        group.element.classList.remove('CellSubActive');
+        group.cells.forEach(cell => cell.element.classList.remove('CellActive', 'CellSubActive'));
+      });
+      board.selectedCell?.pencilElements.forEach(x => x.classList.remove('CellActive', 'CellSubActive'));
+  
+      //Get new selected cell
+      board.selectedCell = board.groups[group].cells[index];
+  
+      //Highlight Cell
+      board.selectedCell.element.classList.add('CellActive');
+  
+      //Highlight Group
+      board.selectedCell.element.parentElement?.classList.add('CellSubActive');
+  
+      //Highlight Row
+      //let row = Math.trunc(group / 3) * 3 + Math.trunc(index / 3);
+      let groupRow = Math.trunc(group / 3) * 3;
+      let cellRow = Math.trunc(index / 3) * 3;
+  
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          board.groups[groupRow + i].cells[cellRow + j].element.classList.add('CellSubActive');
+        }
+      }
+  
+      //Highlight Column
+      //let column = (group % 3) * 3 + index % 3;
+      let groupColumn = group % 3;
+      let cellColumn = index % 3;
+  
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          board.groups[groupColumn + (i * 3)].cells[cellColumn + (j * 3)].element.classList.add('CellSubActive');
+        }
+      }
+  
+      //Highlight numbers with same value
+      if (board.selectedCell.value == undefined) return;
+  
+      board.groups.forEach(group => group.cells.forEach(cell => {
+        if (board.selectedCell != cell && board.selectedCell?.value == cell.value) {
+          cell.element.classList.add('CellActive');
+        }
+      }));
+  
+      renderCellValues();
+    }
+  
+    function setSelectedCellValue(value?: number) {
+      if (board.selectedCell == undefined || board.selectedCell?.readOnly) return;
+  
+      if (!board.isPencilEnabled || value == undefined) {
+        board.selectedCell.value = value;
+  
+        if (board.selectedCell.pencilEnabled) {
+          board.selectedCell.pencilValues = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+          board.selectedCell.pencilEnabled = false;
+        }
+      } else {
+        board.selectedCell.value = undefined;
+        board.selectedCell.pencilEnabled = true;
+        board.selectedCell.pencilValues[value-1] = Number(!board.selectedCell.pencilValues[value-1]);
+      }
+  
+      setSelectedCell(board.selectedCell.group, board.selectedCell.index);
+      renderCellValues();
+  
+      console.log(validBoard(board));
+    }
+  
+    function renderCellValues() {
+      board.groups.forEach(group => group.cells.forEach(cell => {
+        cell.element.children[0].textContent = null;
+        cell.pencilElements.forEach(pencil => pencil.classList.add('hidden-pen'));
+  
+        if (!cell.pencilEnabled) {
+          //cell value should never be null here...
+          cell.element.children[0].textContent = cell.value?.toString() ?? "";
+        } else {
+          for (let i = 0; i < 9; i++) {
+            if (cell.pencilValues[i]) {
+              cell.pencilElements[i].classList.remove('hidden-pen');
+            }
+          }
+        }
+      }));    
+    }
+    //#endregion
+
+    return board;
+  }
+
+  function validGroup(group: Group): boolean {
+    let groupSet = new Set();
+    for (let i = 0; i < 9; i++) {
+      if (group.cells[i].value != undefined) {
+        groupSet.add(group.cells[i].value);
+      }
+    }
+
+    return groupSet.size == 9;
+  }
+
+  function validRow(cell: Cell): boolean {
+    let rowSet = new Set();
+    let groupRow = Math.trunc(cell.group / 3) * 3;
+    let cellRow = Math.trunc(cell.index / 3) * 3;
+
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) { 
+        if (board.groups[groupRow + i].cells[cellRow + j].value != undefined) {
+          rowSet.add(board.groups[groupRow + i].cells[cellRow + j].value);
+        }
+      }
+    }
+
+    return rowSet.size == 9;
+  }
+
+  function validColumn(cell: Cell): boolean {
+    let columnSet = new Set();
+    let groupColumn = cell.group % 3;
+    let cellColumn = cell.index % 3;
+
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (board.groups[groupColumn + (i * 3)].cells[cellColumn + (j * 3)].value != undefined) {
+          columnSet.add(board.groups[groupColumn + (i * 3)].cells[cellColumn + (j * 3)].value);
+        }
+      }
+    }
+
+    return columnSet.size == 9;
+  }
+
+  function validBoard(board: Board): boolean {
+    //Groups
+    for (let i = 0; i < 9; i++) {
+      if (!validGroup(board.groups[i])) return false;
+    }
+
+    //Rows
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+          if (!validRow(board.groups[i * 3].cells[j * 3])) return false;
+      }
+    }
+
+    //Columns
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+          if (!validColumn(board.groups[i].cells[j])) return false;
+      }
+    }
+
+    return true;
   }
 
   function GenerateSudokuPuzzle() : number[][] {
-    //TODO: Actually generate a valid sudoku board
-    let result = 
-    [
-      //each line is a group
-      [5,4,3,2,1,9,8,7,6],
-      [9,2,1,6,8,7,3,5,4],
-      [8,7,6,5,4,3,2,1,9],
-      [9,8,7,3,2,1,6,5,4],
-      [4,6,5,7,9,8,1,3,2],
-      [3,2,1,6,5,4,9,8,7],
-      [7,6,5,4,3,2,1,9,8],
-      [2,4,3,8,1,9,5,7,6],
-      [1,9,8,7,6,5,4,3,2]
+    let dummyBoard: number[][] = [
+      [0,5,1,3,6,2,7,0,0],
+      [0,4,0,0,5,8,0,0,0],
+      [0,0,0,4,0,0,0,2,5],
+      [0,8,0,0,0,0,9,0,3],
+      [0,0,0,0,0,0,0,0,0],
+      [7,0,5,0,0,0,0,8,0],
+      [1,2,0,0,0,9,0,0,0],
+      [0,0,0,2,8,0,0,6,0],
+      [0,0,8,5,3,4,2,9,0]
     ];
   
-    return result;
+
+    return rowBoardToGroupBoard(solve(dummyBoard));;
+
+    //#region Solver + Utils
+    //Because our Board object is grouped by Groups (3x3 squares) and not rows. Our solver solves by rows
+    function rowBoardToGroupBoard(board: number[][]): number[][] {
+      let resultBoard: number[][] = [];
+
+      for (let group = 0; group < 9; group++) {
+        let groupArray: number[] = [];
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            let column = j + (group % 3) * 3;
+            let row = i + Math.trunc(group / 3) * 3;
+            groupArray.push(board[row][column]);
+          }
+        }
+
+        resultBoard.push(groupArray);
+      }
+
+      return resultBoard;
+    }
+    function nextEmptySpot(board: number[][]): number[] {
+      for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            if (board[i][j] == 0) 
+                return [i, j];
+        }
+      }
+      return [-1, -1];
+    }
+    
+    function checkRow(board: number[][], row: number, value: number): boolean {
+      for(let i = 0; i < board[row].length; i++) {
+          if(board[row][i] == value) {
+              return false;
+          }
+      }
+    
+      return true;
+    }
+
+    function checkColumn(board: number[][], column: number, value: number): boolean{
+      for(let i = 0; i < board.length; i++) {
+          if(board[i][column] == value) {
+              return false;
+          }
+      }
+
+      return true;
+    }
+    
+    function checkSquare(board: number[][], row: number, column: number, value: number): boolean {
+      let rowIndex = Math.floor(row / 3) * 3;
+      let colIndex = Math.floor(column / 3) * 3;
+      
+      for (let i = 0; i < 3; i++){
+          for (let j = 0; j < 3; j++){
+              if (board[rowIndex + i][colIndex + j] == value)
+                  return false;
+          }
+      }
+
+      return true;
+    }
+
+    function checkValue(board: number[][], row: number, column: number, value: number): boolean {
+      if(checkRow(board, row, value) &&
+        checkColumn(board, column, value) &&
+        checkSquare(board, row, column, value)) {
+          return true;
+      }
+      
+      return false; 
+    }
+
+    function solve(board: number[][]): number[][] {  
+      let emptySpot = nextEmptySpot(board);
+      let row = emptySpot[0];
+      let col = emptySpot[1];
+
+      // there is no more empty spots
+      if (row == -1) {
+          return board;
+      }
+
+      for(let num = 1; num < 10; num++) {
+          if (checkValue(board, row, col, num)) {
+            board[row][col] = num;
+              solve(board);
+          }
+      }
+
+      if (nextEmptySpot(board)[0] != -1) {
+        board[row][col] = 0;
+      }
+
+      return board;
+    }
+    //#endregion
   }
 
-  boardGeneration(0.5);
+  //TODO: Better code organization.. Classes?
+  let board = boardGeneration(0.5, GenerateSudokuPuzzle());
 }
