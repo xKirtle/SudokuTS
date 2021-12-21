@@ -1,7 +1,7 @@
 "use strict";
 {
     const boardElement = document.getElementById('grid');
-    function boardGeneration(difficulty, arrayBoard) {
+    function boardGeneration() {
         let board = {
             groups: [],
             isPencilEnabled: false
@@ -16,10 +16,10 @@
             group.element.style.gridArea = 'Group' + i;
             //#region Create Cells
             for (let j = 1; j < 10; j++) {
-                let isReadOnly = Math.random() >= difficulty;
                 let cell = {
                     value: undefined,
-                    readOnly: isReadOnly,
+                    valueElement: document.createElement('div'),
+                    readOnly: false,
                     pencilEnabled: false,
                     pencilValues: [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     pencilElements: [],
@@ -35,15 +35,9 @@
                     setSelectedCell(cell.group, cell.index);
                 });
                 //HTML display of the Cell Value
-                let cellValue = document.createElement('div');
-                cellValue.classList.add('CellValue');
-                cellValue.style.gridArea = '1 / 1 / 4 / 4';
-                if (isReadOnly) {
-                    cell.value = arrayBoard[cell.group][cell.index];
-                    cellValue.textContent = arrayBoard[cell.group][cell.index].toString();
-                    cellValue.style.color = '#999';
-                }
-                cell.element.append(cellValue);
+                cell.valueElement.classList.add('CellValue');
+                cell.valueElement.style.gridArea = '1 / 1 / 4 / 4';
+                cell.element.append(cell.valueElement);
                 //Create Pencil Cells
                 for (let k = 1; k < 10; k++) {
                     let penElement = document.createElement('div');
@@ -109,27 +103,30 @@
         boardElement === null || boardElement === void 0 ? void 0 : boardElement.append(optionsElement);
         //#endregion
         //Make keyboard be able to place numbers
-        // addEventListener('keydown', (event) => {
-        //   if (event.key !== undefined) {
-        //     let key = parseInt(event.key);
-        //     if (key >= 1 && key <= 9) {
-        //       if (board.selectedCell != undefined) {
-        //         setSelectedCellValue(key);
-        //       }
-        //     }
-        //     if (event.key == 'Tab') {
-        //       if (board.selectedCell != undefined) {
-        //         let cellIndex = board.selectedCell.index;
-        //         if (cellIndex < 8) {
-        //           setSelectedCell(board.selectedCell.group, board.selectedCell.index + 1);
-        //         } else {
-        //           setSelectedCell(board.selectedCell.group + 1, 0);
-        //         }
-        //         event.preventDefault();
-        //       }
-        //     }
-        //   }
-        // });
+        addEventListener('keydown', (event) => {
+            if (event.key !== undefined) {
+                let key = parseInt(event.key);
+                if (key >= 1 && key <= 9) {
+                    if (board.selectedCell != undefined) {
+                        setSelectedCellValue(key);
+                    }
+                }
+                if (event.key == 'Tab') {
+                    if (board.selectedCell != undefined) {
+                        let cellIndex = board.selectedCell.index;
+                        if (cellIndex < 8) {
+                            setSelectedCell(board.selectedCell.group, board.selectedCell.index + 1);
+                        }
+                        else {
+                            setSelectedCell(board.selectedCell.group + 1, 0);
+                        }
+                        event.preventDefault();
+                    }
+                }
+                //Shift Tab..
+            }
+            return board;
+        });
         //#region Functions
         function setSelectedCell(group, index) {
             var _a, _b;
@@ -217,41 +214,6 @@
         //#endregion
         return board;
     }
-    function validGroup(group) {
-        let groupSet = new Set();
-        for (let i = 0; i < 9; i++) {
-            if (group.cells[i].value != undefined) {
-                groupSet.add(group.cells[i].value);
-            }
-        }
-        return groupSet.size == 9;
-    }
-    function validRow(cell) {
-        let rowSet = new Set();
-        let groupRow = Math.trunc(cell.group / 3) * 3;
-        let cellRow = Math.trunc(cell.index / 3) * 3;
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-                if (board.groups[groupRow + i].cells[cellRow + j].value != undefined) {
-                    rowSet.add(board.groups[groupRow + i].cells[cellRow + j].value);
-                }
-            }
-        }
-        return rowSet.size == 9;
-    }
-    function validColumn(cell) {
-        let columnSet = new Set();
-        let groupColumn = cell.group % 3;
-        let cellColumn = cell.index % 3;
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-                if (board.groups[groupColumn + (i * 3)].cells[cellColumn + (j * 3)].value != undefined) {
-                    columnSet.add(board.groups[groupColumn + (i * 3)].cells[cellColumn + (j * 3)].value);
-                }
-            }
-        }
-        return columnSet.size == 9;
-    }
     function validBoard(board) {
         //Groups
         for (let i = 0; i < 9; i++) {
@@ -261,18 +223,53 @@
         //Rows
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                if (!validRow(board.groups[i * 3].cells[j * 3]))
+                if (!validRow(board, board.groups[i * 3].cells[j * 3]))
                     return false;
             }
         }
         //Columns
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                if (!validColumn(board.groups[i].cells[j]))
+                if (!validColumn(board, board.groups[i].cells[j]))
                     return false;
             }
         }
         return true;
+        function validGroup(group) {
+            let groupSet = new Set();
+            for (let i = 0; i < 9; i++) {
+                if (group.cells[i].value != undefined) {
+                    groupSet.add(group.cells[i].value);
+                }
+            }
+            return groupSet.size == 9;
+        }
+        function validRow(board, cell) {
+            let rowSet = new Set();
+            let groupRow = Math.trunc(cell.group / 3) * 3;
+            let cellRow = Math.trunc(cell.index / 3) * 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board.groups[groupRow + i].cells[cellRow + j].value != undefined) {
+                        rowSet.add(board.groups[groupRow + i].cells[cellRow + j].value);
+                    }
+                }
+            }
+            return rowSet.size == 9;
+        }
+        function validColumn(board, cell) {
+            let columnSet = new Set();
+            let groupColumn = cell.group % 3;
+            let cellColumn = cell.index % 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board.groups[groupColumn + (i * 3)].cells[cellColumn + (j * 3)].value != undefined) {
+                        columnSet.add(board.groups[groupColumn + (i * 3)].cells[cellColumn + (j * 3)].value);
+                    }
+                }
+            }
+            return columnSet.size == 9;
+        }
     }
     function GenerateSudokuPuzzle() {
         let emptyBoard = [
@@ -374,14 +371,27 @@
         }
         //#endregion
     }
+    function fillBoard(board, solvedBoard, difficulty) {
+        for (let i = 0; i < solvedBoard.length; i++) {
+            for (let j = 0; j < solvedBoard[i].length; j++) {
+                let cell = board.groups[i].cells[j];
+                cell.value = undefined;
+                cell.valueElement.style.color = 'white';
+                cell.valueElement.textContent = '';
+                if (Math.random() >= difficulty) {
+                    cell.value = solvedBoard[i][j];
+                    cell.valueElement.style.color = '#999';
+                    cell.valueElement.textContent = solvedBoard[i][j].toString();
+                }
+            }
+        }
+    }
     //Smaller -> easier
     let difficulty = 0.05;
     function resetBoard() {
-        console.log('reset');
-        if (boardElement != null)
-            boardElement.innerHTML = '';
-        boardGeneration(difficulty, GenerateSudokuPuzzle());
+        fillBoard(board, GenerateSudokuPuzzle(), difficulty);
     }
     //TODO: Better code organization.. Classes?
-    boardGeneration(difficulty, GenerateSudokuPuzzle());
+    let board = boardGeneration();
+    fillBoard(board, GenerateSudokuPuzzle(), difficulty);
 }
