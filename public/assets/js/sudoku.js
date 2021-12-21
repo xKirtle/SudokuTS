@@ -109,28 +109,27 @@
         boardElement === null || boardElement === void 0 ? void 0 : boardElement.append(optionsElement);
         //#endregion
         //Make keyboard be able to place numbers
-        addEventListener('keydown', (event) => {
-            if (event.key !== undefined) {
-                let key = parseInt(event.key);
-                if (key >= 1 && key <= 9) {
-                    if (board.selectedCell != undefined) {
-                        setSelectedCellValue(key);
-                    }
-                }
-                if (event.key == 'Tab') {
-                    if (board.selectedCell != undefined) {
-                        let cellIndex = board.selectedCell.index;
-                        if (cellIndex < 8) {
-                            setSelectedCell(board.selectedCell.group, board.selectedCell.index + 1);
-                        }
-                        else {
-                            setSelectedCell(board.selectedCell.group + 1, 0);
-                        }
-                        event.preventDefault();
-                    }
-                }
-            }
-        });
+        // addEventListener('keydown', (event) => {
+        //   if (event.key !== undefined) {
+        //     let key = parseInt(event.key);
+        //     if (key >= 1 && key <= 9) {
+        //       if (board.selectedCell != undefined) {
+        //         setSelectedCellValue(key);
+        //       }
+        //     }
+        //     if (event.key == 'Tab') {
+        //       if (board.selectedCell != undefined) {
+        //         let cellIndex = board.selectedCell.index;
+        //         if (cellIndex < 8) {
+        //           setSelectedCell(board.selectedCell.group, board.selectedCell.index + 1);
+        //         } else {
+        //           setSelectedCell(board.selectedCell.group + 1, 0);
+        //         }
+        //         event.preventDefault();
+        //       }
+        //     }
+        //   }
+        // });
         //#region Functions
         function setSelectedCell(group, index) {
             var _a, _b;
@@ -193,7 +192,9 @@
             }
             setSelectedCell(board.selectedCell.group, board.selectedCell.index);
             renderCellValues();
-            console.log(validBoard(board));
+            if (validBoard(board)) {
+                resetBoard();
+            }
         }
         function renderCellValues() {
             board.groups.forEach(group => group.cells.forEach(cell => {
@@ -274,19 +275,23 @@
         return true;
     }
     function GenerateSudokuPuzzle() {
-        let dummyBoard = [
-            [0, 5, 1, 3, 6, 2, 7, 0, 0],
-            [0, 4, 0, 0, 5, 8, 0, 0, 0],
-            [0, 0, 0, 4, 0, 0, 0, 2, 5],
-            [0, 8, 0, 0, 0, 0, 9, 0, 3],
+        let emptyBoard = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [7, 0, 5, 0, 0, 0, 0, 8, 0],
-            [1, 2, 0, 0, 0, 9, 0, 0, 0],
-            [0, 0, 0, 2, 8, 0, 0, 6, 0],
-            [0, 0, 8, 5, 3, 4, 2, 9, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
         ];
-        return rowBoardToGroupBoard(solve(dummyBoard));
-        ;
+        for (let i = 0; i < 9; i++) {
+            emptyBoard[Math.trunc(Math.random() * 9)][Math.trunc(Math.random() * 9)] = i;
+        }
+        let solvedBoard = solve(emptyBoard);
+        console.log(solvedBoard);
+        return rowBoardToGroupBoard(solvedBoard);
         //#region Solver + Utils
         //Because our Board object is grouped by Groups (3x3 squares) and not rows. Our solver solves by rows
         function rowBoardToGroupBoard(board) {
@@ -369,6 +374,14 @@
         }
         //#endregion
     }
+    //Smaller -> easier
+    let difficulty = 0.05;
+    function resetBoard() {
+        console.log('reset');
+        if (boardElement != null)
+            boardElement.innerHTML = '';
+        boardGeneration(difficulty, GenerateSudokuPuzzle());
+    }
     //TODO: Better code organization.. Classes?
-    let board = boardGeneration(0.5, GenerateSudokuPuzzle());
+    boardGeneration(difficulty, GenerateSudokuPuzzle());
 }

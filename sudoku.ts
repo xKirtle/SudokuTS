@@ -254,8 +254,11 @@
   
       setSelectedCell(board.selectedCell.group, board.selectedCell.index);
       renderCellValues();
-  
-      console.log(validBoard(board));
+
+      if (validBoard(board)) {
+        // resetBoard();
+        console.log("FINISH");
+      }
     }
   
     function renderCellValues() {
@@ -347,20 +350,25 @@
   }
 
   function GenerateSudokuPuzzle() : number[][] {
-    let dummyBoard: number[][] = [
-      [0,5,1,3,6,2,7,0,0],
-      [0,4,0,0,5,8,0,0,0],
-      [0,0,0,4,0,0,0,2,5],
-      [0,8,0,0,0,0,9,0,3],
+    let emptyBoard: number[][] = [
       [0,0,0,0,0,0,0,0,0],
-      [7,0,5,0,0,0,0,8,0],
-      [1,2,0,0,0,9,0,0,0],
-      [0,0,0,2,8,0,0,6,0],
-      [0,0,8,5,3,4,2,9,0]
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
     ];
-  
 
-    return rowBoardToGroupBoard(solve(dummyBoard));;
+    for (let i: number = 0; i < 9; i++) {
+      emptyBoard[Math.trunc(Math.random() * 9)][Math.trunc(Math.random() * 9)] = i;
+    }
+
+    let solvedBoard = solve(emptyBoard);
+    console.log(solvedBoard);
+    return rowBoardToGroupBoard(solvedBoard);
 
     //#region Solver + Utils
     //Because our Board object is grouped by Groups (3x3 squares) and not rows. Our solver solves by rows
@@ -462,6 +470,17 @@
     //#endregion
   }
 
+  //Smaller -> easier
+  let difficulty = 0.05;
+
+  // function resetBoard() {
+  //   console.log('reset');
+  //   if (boardElement != null)
+  //     boardElement.innerHTML = '';
+
+  //   boardGeneration(difficulty, GenerateSudokuPuzzle());
+  // }
+
   //TODO: Better code organization.. Classes?
-  let board = boardGeneration(0.5, GenerateSudokuPuzzle());
+  let board = boardGeneration(difficulty, GenerateSudokuPuzzle());
 }
